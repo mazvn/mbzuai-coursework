@@ -1,0 +1,23 @@
+types:
+  museum: [founded, ticket_price]
+  park: [area_hectares]
+  beach: [lifeguard]
+
+pois:
+  - {id: 1, name: "National Museum", type: museum, x: 100, y: 100, attributes: {founded: 1985, ticket_price: 25}}
+  - {id: 2, name: "City Park", type: park, x: 110, y: 105, attributes: {area_hectares: 50}}
+  - {id: 3, name: "Blue Beach", type: beach, x: 500, y: 500, attributes: {lifeguard: true}}
+
+visitors:
+  - id: 10
+    name: "Ava"
+    nationality: "UAE"
+    visits:
+      - {poi_id: 1, date: "01/01/2025", rating: 8}
+      - {poi_id: 2, date: "02/01/2025"}
+  - id: 11
+    name: "Omar"
+    nationality: "Jordan"
+    visits:
+      - {poi_id: 2, date: "01/01/2025", rating: 7}
+      - {poi_id: 3, date: "03/01/2025"}
