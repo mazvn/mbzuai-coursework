@@ -1,0 +1,7 @@
+numpy
+pandas
+scikit-learn
+# optional, used automatically if installed:
+# xgboost
+# lightgbm
+# catboost
