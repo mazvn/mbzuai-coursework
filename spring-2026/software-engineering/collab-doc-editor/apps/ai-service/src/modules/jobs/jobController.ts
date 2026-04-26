@@ -1,0 +1,247 @@
+import type { Request, Response, NextFunction } from "express";
+import { ERROR_CODES } from "@repo/contracts";
+import { runJob, streamJob } from "./runJob";
+
+function apiError(
+  code: (typeof ERROR_CODES)[keyof typeof ERROR_CODES],
+  message: string,
+  details?: unknown
+) {
+  return { code, message, ...(details !== undefined ? { details } : {}) };
+}
+
+function isValidOperation(
+  op: any
+): op is "enhance" | "summarize" | "translate" | "reformat" {
+  return (
+    op === "enhance" ||
+    op === "summarize" ||
+    op === "translate" ||
+    op === "reformat"
+  );
+}
+
+function normalizeParameters(parameters: unknown) {
+  const raw = parameters && typeof parameters === "object" ? parameters : {};
+
+  const out: {
+    style?: string;
+    summaryStyle?: string;
+    language?: string;
+    formatStyle?: string;
+  } = {};
+
+  if (typeof (raw as any).style === "string" && (raw as any).style.trim()) {
+    out.style = (raw as any).style.trim();
+  }
+
+  if (
+    typeof (raw as any).summaryStyle === "string" &&
+    (raw as any).summaryStyle.trim()
+  ) {
+    out.summaryStyle = (raw as any).summaryStyle.trim();
+  }
+
+  if (
+    typeof (raw as any).language === "string" &&
+    (raw as any).language.trim()
+  ) {
+    out.language = (raw as any).language.trim();
+  }
+
+  if (
+    typeof (raw as any).formatStyle === "string" &&
+    (raw as any).formatStyle.trim()
+  ) {
+    out.formatStyle = (raw as any).formatStyle.trim();
+  }
+
+  return out;
+}
+
+function writeSse(res: Response, event: string, data: unknown) {
+  res.write(`event: ${event}\n`);
+  res.write(`data: ${JSON.stringify(data)}\n\n`);
+}
+
+export const jobController = {
+  // POST /jobs/run
+  // body: { jobId, operation, selectedText, parameters? }
+  // res: { result }
+  async run(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { jobId, operation, selectedText, parameters } = req.body as {
+        jobId?: unknown;
+        operation?: unknown;
+        selectedText?: unknown;
+        parameters?: unknown;
+      };
+
+      if (!jobId || typeof jobId !== "string") {
+        throw apiError(ERROR_CODES.INVALID_REQUEST, "jobId is required");
+      }
+
+      if (!isValidOperation(operation)) {
+        throw apiError(ERROR_CODES.INVALID_REQUEST, "Invalid operation");
+      }
+
+      if (typeof selectedText !== "string") {
+        throw apiError(ERROR_CODES.INVALID_REQUEST, "selectedText is required");
+      }
+
+      const trimmedSelectedText = selectedText.trim();
+
+      if (trimmedSelectedText.length === 0) {
+        throw apiError(ERROR_CODES.INVALID_REQUEST, "selectedText is empty");
+      }
+
+      const MAX_SELECTED = 20_000;
+      if (selectedText.length > MAX_SELECTED) {
+        throw apiError(
+          ERROR_CODES.INVALID_REQUEST,
+          `selectedText too large (max ${MAX_SELECTED} chars)`
+        );
+      }
+
+      const normalizedParameters = normalizeParameters(parameters);
+
+      if (operation === "translate" && !normalizedParameters.language) {
+        throw apiError(
+          ERROR_CODES.INVALID_REQUEST,
+          "language is required for translate"
+        );
+      }
+
+      if (operation === "reformat" && !normalizedParameters.formatStyle) {
+        throw apiError(
+          ERROR_CODES.INVALID_REQUEST,
+          "formatStyle is required for reformat"
+        );
+      }
+
+      const out = await runJob({
+        jobId,
+        operation,
+        selectedText,
+        parameters: normalizedParameters,
+      });
+
+      if (!out?.result || typeof out.result !== "string") {
+        throw apiError(
+          ERROR_CODES.AI_PROVIDER_UNAVAILABLE,
+          "Provider returned invalid response"
+        );
+      }
+
+      return res.json({ result: out.result });
+    } catch (err: any) {
+      if (
+        err &&
+        typeof err === "object" &&
+        typeof err.code === "string" &&
+        typeof err.message === "string"
+      ) {
+        return next(err);
+      }
+
+      return next(
+        apiError(ERROR_CODES.AI_PROVIDER_UNAVAILABLE, "AI provider unavailable", {
+          originalMessage: err?.message ?? String(err),
+        })
+      );
+    }
+  },
+
+  // POST /jobs/stream
+  // body: { jobId, operation, selectedText, parameters? }
+  // res: SSE events: meta, chunk, done, error
+  async stream(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { jobId, operation, selectedText, parameters } = req.body as {
+        jobId?: unknown;
+        operation?: unknown;
+        selectedText?: unknown;
+        parameters?: unknown;
+      };
+
+      if (!jobId || typeof jobId !== "string") {
+        throw apiError(ERROR_CODES.INVALID_REQUEST, "jobId is required");
+      }
+
+      if (!isValidOperation(operation)) {
+        throw apiError(ERROR_CODES.INVALID_REQUEST, "Invalid operation");
+      }
+
+      if (typeof selectedText !== "string") {
+        throw apiError(ERROR_CODES.INVALID_REQUEST, "selectedText is required");
+      }
+
+      if (selectedText.trim().length === 0) {
+        throw apiError(ERROR_CODES.INVALID_REQUEST, "selectedText is empty");
+      }
+
+      const normalizedParameters = normalizeParameters(parameters);
+
+      if (operation === "translate" && !normalizedParameters.language) {
+        throw apiError(ERROR_CODES.INVALID_REQUEST, "language is required for translate");
+      }
+
+      if (operation === "reformat" && !normalizedParameters.formatStyle) {
+        throw apiError(ERROR_CODES.INVALID_REQUEST, "formatStyle is required for reformat");
+      }
+
+      res.setHeader("Content-Type", "text/event-stream");
+      res.setHeader("Cache-Control", "no-cache, no-transform");
+      res.setHeader("Connection", "keep-alive");
+      res.flushHeaders?.();
+
+      const abortController = new AbortController();
+      res.on("close", () => {
+        if (!res.writableEnded) {
+          abortController.abort();
+        }
+      });
+
+      writeSse(res, "meta", { jobId });
+
+      const out = await streamJob({
+        jobId,
+        operation,
+        selectedText,
+        parameters: normalizedParameters,
+        signal: abortController.signal,
+        onChunk: async (chunk) => {
+          writeSse(res, "chunk", { chunk });
+        },
+      });
+
+      writeSse(res, "done", {
+        jobId,
+        result: out.result,
+        prompt: out.prompt ?? null,
+        model: out.model ?? null,
+      });
+      res.end();
+    } catch (err: any) {
+      if (!res.headersSent) {
+        return next(
+          apiError(ERROR_CODES.AI_PROVIDER_UNAVAILABLE, "AI provider unavailable", {
+            originalMessage: err?.message ?? String(err),
+          })
+        );
+      }
+
+      writeSse(res, "error", {
+        code:
+          err && typeof err === "object" && typeof err.code === "string"
+            ? err.code
+            : ERROR_CODES.AI_PROVIDER_UNAVAILABLE,
+        message:
+          err && typeof err === "object" && typeof err.message === "string"
+            ? err.message
+            : "AI provider unavailable",
+      });
+      res.end();
+    }
+  },
+};

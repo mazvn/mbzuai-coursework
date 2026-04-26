@@ -1,0 +1,229 @@
+@import "tailwindcss";
+
+/* ---------------------------
+   Global base polish
+---------------------------- */
+
+html,
+body {
+  background-color: #f8fafc; /* softer than pure white */
+  color: #0f172a;
+}
+
+/* ---------------------------
+   Collaboration cursor
+---------------------------- */
+
+.collaboration-cursor__caret,
+.collaboration-cursor__label,
+.collaboration-cursor__selection {
+  pointer-events: none !important;
+}
+
+.collaboration-cursor__caret {
+  position: relative;
+  margin-left: -1px;
+  margin-right: -1px;
+  border-left-width: 2px;
+  border-left-style: solid;
+  display: inline-block;
+  height: 1em;
+  vertical-align: text-top;
+  z-index: 20;
+}
+
+.collaboration-cursor__label {
+  position: absolute;
+  top: -1.45em;
+  left: -1px;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  border-radius: 8px;
+  padding: 3px 7px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  user-select: none;
+  z-index: 30;
+}
+
+.collaboration-cursor__selection {
+  display: inline;
+  border-radius: 4px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  opacity: 0.18;
+}
+
+/* ---------------------------
+   Selection styling
+---------------------------- */
+
+.ProseMirror ::selection {
+  background: rgba(59, 130, 246, 0.18);
+}
+
+.ProseMirror ::-moz-selection {
+  background: rgba(59, 130, 246, 0.18);
+}
+
+.ProseMirror .ProseMirror-selectednode {
+  outline: 2px solid rgba(59, 130, 246, 0.28);
+  border-radius: 6px;
+}
+
+/* ---------------------------
+   Editor base
+---------------------------- */
+
+.ProseMirror {
+  outline: none;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.ProseMirror > *:first-child {
+  margin-top: 0;
+}
+
+.ProseMirror > *:last-child {
+  margin-bottom: 0;
+}
+
+/* ---------------------------
+   Typography (clean + modern)
+---------------------------- */
+
+.ProseMirror p {
+  margin: 0.75rem 0;
+  font-size: 1rem;
+  line-height: 1.8;
+  color: #0f172a;
+}
+
+.ProseMirror h1 {
+  margin: 1.75rem 0 0.85rem;
+  font-size: 2.1rem;
+  line-height: 1.15;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: #020617;
+}
+
+.ProseMirror h2 {
+  margin: 1.4rem 0 0.7rem;
+  font-size: 1.6rem;
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #020617;
+}
+
+.ProseMirror h3 {
+  margin: 1.1rem 0 0.6rem;
+  font-size: 1.25rem;
+  line-height: 1.35;
+  font-weight: 600;
+  color: #020617;
+}
+
+/* ---------------------------
+   Lists
+---------------------------- */
+
+.ProseMirror ul,
+.ProseMirror ol {
+  margin: 0.85rem 0;
+  padding-left: 1.6rem;
+  color: #0f172a;
+}
+
+.ProseMirror ul {
+  list-style: disc;
+}
+
+.ProseMirror ol {
+  list-style: decimal;
+}
+
+.ProseMirror li {
+  margin: 0.3rem 0;
+}
+
+.ProseMirror li p {
+  margin: 0.25rem 0;
+}
+
+/* ---------------------------
+   Blockquote
+---------------------------- */
+
+.ProseMirror blockquote {
+  margin: 1.2rem 0;
+  border-left: 3px solid #e2e8f0;
+  padding-left: 1rem;
+  color: #475569;
+  background: #f8fafc;
+  border-radius: 6px;
+}
+
+.ProseMirror pre {
+  margin: 1.15rem 0;
+  overflow-x: auto;
+  border: 1px solid #dbe4f0;
+  border-radius: 16px;
+  background: #0f172a;
+  padding: 1rem 1.1rem;
+  color: #e2e8f0;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.ProseMirror pre code {
+  display: block;
+  font-family:
+    "SFMono-Regular", "SF Mono", ui-monospace, Menlo, Monaco, Consolas, "Liberation Mono",
+    "Courier New", monospace;
+  font-size: 0.92rem;
+  line-height: 1.7;
+  white-space: pre;
+  color: inherit;
+}
+
+/* ---------------------------
+   Links
+---------------------------- */
+
+.ProseMirror a {
+  color: #2563eb;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ---------------------------
+   Divider
+---------------------------- */
+
+.ProseMirror hr {
+  margin: 1.5rem 0;
+  border: 0;
+  border-top: 1px solid #e2e8f0;
+}
+
+/* ---------------------------
+   Subtle scrollbar (nice touch)
+---------------------------- */
+
+::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, 0.35);
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 116, 139, 0.5);
+}
