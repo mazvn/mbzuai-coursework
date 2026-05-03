@@ -1,11 +1,12 @@
-# office category classification
+# Office Category Classification
 
-**task:** given a table of office buildings (numeric + categorical columns), predict their `OfficeCategory`. graded on test accuracy.
+**Task:** Given a table of office buildings with numeric and categorical columns, predict their `OfficeCategory`. Graded on test accuracy.
 
-**what i did:** stacking. around 8 different models (trees, boosting, logistic regression, naive bayes, QDA) each give class probabilities on a validation split, then a logistic regression learns how to combine them. then everything is refit on the full train data for the test predictions. only the linear/probabilistic models get scaled features, trees use raw values.
+**What I did:** Stacking. Around 8 different models (tree ensembles, boosting, logistic regression, naive Bayes, QDA) each predict class probabilities on a validation split, and a logistic regression learns how to combine them. Then everything is refit on the full training data to predict the test set. Only the linear and probabilistic models get scaled features, the trees use raw values.
 
 ```
 pip install -r requirements.txt
 python office_classifier.py --train office_train.csv --test office_test.csv
 ```
-data is from the course so it's not included.
+
+The data is from the course, so it's not included.

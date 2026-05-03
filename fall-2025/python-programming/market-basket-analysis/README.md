@@ -1,7 +1,7 @@
-# market basket analysis
+# Market Basket Analysis
 
-**task:** take a grocery transactions dataset, clean it, give products random prices, and find which items are bought together the most (pairs and triples), with some plots.
+**Task:** Take a grocery transactions dataset, clean it, give products random prices and find which items are bought together the most (pairs and triples), with some plots.
 
-**what i did:** one notebook going A to E. cleaning removes duplicate items in a basket and baskets with less than 2 items. pairs/triples are counted with `itertools.combinations` on sorted baskets into a `Counter`, then filtered by a min support count. plots are in `figures/`.
+**What I did:** One notebook going through parts A to E. Cleaning removes duplicate items in a basket and drops baskets with fewer than 2 items. Pairs and triples are counted with `itertools.combinations` on sorted baskets into a `Counter`, then filtered by a minimum support count. The plots are in `figures/`.
 
-needs `groceries.csv` next to the notebook (course data, not included).
+It needs `groceries.csv` next to the notebook. That's course data, so it's not included.
