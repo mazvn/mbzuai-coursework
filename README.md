@@ -4,7 +4,7 @@ My coursework from MBZUAI, organized by semester and course. Each project folder
 
 ## Notes
 
-- Only assignments and projects are included. Labs, quizzes and exams are left out on purpose.
+- Only assignments and projects are included. Labs, quizzes, homework and exams are left out on purpose.
 - Only my code is here. Assignment statements, handouts, course datasets and any starter code from the course belong to the course staff, so some projects need your own data to run.
 - Everything here is either my own work or group work that all teammates agreed to publish. A few other group projects are not included because not every teammate gave consent.
 
@@ -28,3 +28,8 @@ My coursework from MBZUAI, organized by semester and course. Each project folder
 
 **Intro to ML**
 - [Loan risk prediction](spring-2026/intro-to-ml/loan-risk-prediction)
+
+## Fall 2026
+
+**Data Engineering**
+- [Marketplace delivery pipeline](fall-2026/data-engineering/marketplace-delivery-pipeline)
